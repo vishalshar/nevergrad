@@ -158,7 +158,9 @@ class Experiment:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=base.InefficientSettingsWarning)  # benchmark do not need to be efficient
             try:
-                recommendation = optimizer.optimize(counter, batch_mode=True)
+                from concurrent import futures
+                with futures.ThreadPoolExecutor(max_workers=optimizer.num_workers) as executor:
+                    recommendation = optimizer.optimize(counter, executor=executor, batch_mode=False)
             except Exception as e:  # pylint: disable=broad-except
                 recommendation = optimizer.provide_recommendation()  # get the recommendation anyway
                 self._log_results(t0, counter.num_calls, recommendation)

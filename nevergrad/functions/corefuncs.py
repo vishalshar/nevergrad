@@ -42,7 +42,15 @@ def _styblinksitang(x: np.ndarray, noise: float) -> float:
 @registry.register
 def delayedsphere(x: np.ndarray) -> float:
     '''For asynchronous experiments, we induce delays.'''
-    time.sleep(abs(1./x[0]) / 100000. if x[0] != 0. else 0.)
+    waiting_time = (abs(1./x[0])/1000. if x[0] != 0. else 0.)
+    if waiting_time > 1.:
+        waiting_time = 1.
+        print("*")
+#        print("waiting time:", waiting_time)
+    #else:
+    #    if mod(int(waiting_time * 1000, 100) == 0):
+    #        print("#")
+    time.sleep(waiting_time)
     return float(np.sum(x**2))
 
 

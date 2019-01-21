@@ -66,6 +66,21 @@ def minidoe(seed: Optional[int] = None) -> Iterator[Experiment]:
 
 
 @registry.register
+def asynchronous(seed: Optional[int] = None) -> Iterator[Experiment]:
+    # prepare list of parameters to sweep for independent variables
+    seedg = create_seed_generator(seed)
+    names = ["sphere", "delayedsphere"]
+    optims = ["PSO", "CMA", "DE"]
+    functions = [ArtificialFunction(name, block_dimension=bd, useless_variables=bd * uv_factor) for name in names for bd in [2] for uv_factor in [0]]
+    # functions are not initialized and duplicated at yield time, they will be initialized in the experiment
+    for func in functions:
+        for optim in optims:
+            for budget in [2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 32000, 48000]:#, 6400, 9600]: #, 12800, 19200, 25600]:
+                # duplicate -> each Experiment has different randomness
+                yield Experiment(func.duplicate(), optim, budget=budget, num_workers=2000, seed=next(seedg))
+
+
+@registry.register
 def parallel(seed: Optional[int] = None) -> Iterator[Experiment]:
     # prepare list of parameters to sweep for independent variables
     seedg = create_seed_generator(seed)
